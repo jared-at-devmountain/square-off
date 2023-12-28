@@ -1,0 +1,27 @@
+* {
+    margin: 0px;
+}
+
+.app {
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    background-color: grey;
+}
+
+.arena {
+    width: 95%;
+    height: 90%;
+    background-color: white;
+    border: black 4px solid;
+    position: relative;
+}
+
+.square {
+    height: 100px;
+    width: 100px;
+    position: absolute;
+}
