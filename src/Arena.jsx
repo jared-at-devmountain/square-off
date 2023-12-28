@@ -1,8 +1,9 @@
-import { useState, useEffect, useRef, useCallback } from 'react'
+import { useState, useEffect } from 'react'
 import Square from './Square.jsx'
 import useWindowDimensions from './useWindowDimensions.jsx';
 
 const SQUARE_DIMENSIONS = 100
+const SPEED = 30
 
 function Arena() {
 
@@ -16,46 +17,37 @@ function Arena() {
     const [y1, setY1] = useState(0)
     const [x2, setX2] = useState(aWidth - SQUARE_DIMENSIONS)
     const [y2, setY2] = useState(aHeight - SQUARE_DIMENSIONS)
-    
-    const x1Ref = useRef(x1);
-    const y1Ref = useRef(y1);
-    const x2Ref = useRef(x2);
-    const y2Ref = useRef(y2);
 
     //binds key presses to the document
     useEffect(() => {
+
         const handleKeyDown = (e) => {
             const key = e.key;
             
             switch(key) {
                 case 'ArrowLeft':
-                    if(x1 > 0) {
-                        document.getElementById('a').setAttribute('x-1', x1Ref.current - 1) 
-                        x1Ref.current = x1Ref.current - 1
-                        console.log(x1Ref.current)
-                    }
+                    x1 >= 0 && setX1(cur => cur - SPEED)
                     break;
                 case 'ArrowUp':
-                    console.log(key)
+                    y1 >= 0 && setY1(cur => cur - SPEED)
                     break;
                 case 'ArrowDown':
-                    console.log(key)
+                    y1 <= aHeight - 100 && setY1(cur => cur + SPEED)
                     break;
                 case 'ArrowRight':
-                    x1 < aWidth - 100 && x1Ref.current++
-                    console.log(x1Ref.current)
+                    x1 <= aWidth - 100 && setX1(cur => cur + SPEED)
                     break;
                 case 'a':
-                    console.log(key)
+                    x2 >= 0 && setX2(cur => cur - SPEED)
                     break;
                 case 'w':
-                    console.log(key)
+                    y2 >= 0 && setY2(cur => cur - SPEED)
                     break;
                 case 's':
-                    console.log(key)
+                    y2 <= aHeight - 100 && setY2(cur => cur + SPEED)
                     break;
                 case 'd':
-                    console.log(key)
+                    x2 <= aWidth - 100 && setX2(cur => cur + SPEED)
                     break;
                 default:
                     break;
@@ -69,18 +61,8 @@ function Arena() {
     
     }, []);
 
-    useEffect(() => {
-        console.log('hey')
-        setX1(x1Ref.current)
-    }, [x1Ref.current])
-
-    const updatePositionState = useCallback(() => {
-        console.log('hey')
-        setX1(x1Ref.current)
-    }, [x1Ref.current]);
-
   return (
-    <div id="a" className="arena" ref={updatePositionState}>
+    <div id="a" className="arena">
         <Square
             dimensions={SQUARE_DIMENSIONS}
             color='blue'
