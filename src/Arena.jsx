@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import Square from './Square.jsx'
 import useWindowDimensions from './useWindowDimensions.jsx';
 
@@ -18,6 +18,16 @@ function Arena() {
     const [x2, setX2] = useState(aWidth - SQUARE_DIMENSIONS)
     const [y2, setY2] = useState(aHeight - SQUARE_DIMENSIONS)
 
+    const x1Ref = useRef()
+    const y1Ref = useRef()
+    const x2Ref = useRef()
+    const y2Ref = useRef()
+
+    x1Ref.current = x1
+    y1Ref.current = y1
+    x2Ref.current = x2
+    y2Ref.current = y2
+
     //binds key presses to the document
     useEffect(() => {
 
@@ -26,28 +36,76 @@ function Arena() {
             
             switch(key) {
                 case 'ArrowLeft':
-                    x1 >= 0 && setX1(cur => cur - SPEED)
+                    if (x1Ref.current > 0) {
+                        if (x1Ref.current - SPEED < 0) {
+                            setX1(0)
+                        } else {
+                            setX1(x1Ref.current - SPEED) //way 1
+                        }
+                    }
                     break;
                 case 'ArrowUp':
-                    y1 >= 0 && setY1(cur => cur - SPEED)
+                    if (y1Ref.current > 0) {
+                        if (y1Ref.current - SPEED < 0) {
+                            setY1(0)
+                        } else {
+                            setY1(cur => cur - SPEED) //way 2
+                        }
+                    }
                     break;
                 case 'ArrowDown':
-                    y1 <= aHeight - 100 && setY1(cur => cur + SPEED)
+                    if (y1Ref.current < aHeight - 100) {
+                        if (y1Ref.current + SPEED > aHeight - 100) {
+                            setY1(aHeight - 100)
+                        } else {
+                            setY1(cur => cur + SPEED)
+                        }
+                    }
                     break;
                 case 'ArrowRight':
-                    x1 <= aWidth - 100 && setX1(cur => cur + SPEED)
+                    if (x1Ref.current < aWidth - 100) {
+                        if (x1Ref.current + SPEED > aWidth - 100) {
+                            setX1(aWidth - 100)
+                        } else {
+                            setX1(cur => cur + SPEED)
+                        }
+                    }
                     break;
                 case 'a':
-                    x2 >= 0 && setX2(cur => cur - SPEED)
+                    if (x2Ref.current > 0) {
+                        if (x2Ref.current - SPEED < 0) {
+                            setX2(0)
+                        } else {
+                            setX2(x2Ref.current - SPEED) //way 1
+                        }
+                    }
                     break;
                 case 'w':
-                    y2 >= 0 && setY2(cur => cur - SPEED)
+                    if (y2Ref.current > 0) {
+                        if (y2Ref.current - SPEED < 0) {
+                            setY2(0)
+                        } else {
+                            setY2(cur => cur - SPEED) //way 2
+                        }
+                    }
                     break;
                 case 's':
-                    y2 <= aHeight - 100 && setY2(cur => cur + SPEED)
+                    if (y2Ref.current < aHeight - 100) {
+                        if (y2Ref.current + SPEED > aHeight - 100) {
+                            setY2(aHeight - 100)
+                        } else {
+                            setY2(cur => cur + SPEED)
+                        }
+                    }
                     break;
                 case 'd':
-                    x2 <= aWidth - 100 && setX2(cur => cur + SPEED)
+                    if (x2Ref.current < aWidth - 100) {
+                        if (x2Ref.current + SPEED > aWidth - 100) {
+                            setX2(aWidth - 100)
+                        } else {
+                            setX2(cur => cur + SPEED)
+                        }
+                    }
                     break;
                 default:
                     break;
