@@ -1,27 +1,32 @@
 import { useState, useEffect, useRef } from 'react'
+import useWindowDimensions from './useWindowDimensions.jsx'
 import Square from './Square.jsx'
-import useWindowDimensions from './useWindowDimensions.jsx';
 
 const SQUARE_DIMENSIONS = 100
-const SPEED = 30
+const STEP_DISTANCE = 5
+const HOLD_INTERVAL_MS = 8
+const STARTING_OFFSET = 30
 
 function Arena() {
-
 
     const { height, width } = useWindowDimensions();
 
     let aHeight = height * .9
     let aWidth = width * .95
 
-    const [x1, setX1] = useState(10)
-    const [y1, setY1] = useState(0)
-    const [x2, setX2] = useState(aWidth - SQUARE_DIMENSIONS)
-    const [y2, setY2] = useState(aHeight - SQUARE_DIMENSIONS)
+    const [x1, setX1] = useState(0 + STARTING_OFFSET)
+    const [y1, setY1] = useState(0 + STARTING_OFFSET)
+    const [x2, setX2] = useState(aWidth - SQUARE_DIMENSIONS - STARTING_OFFSET)
+    const [y2, setY2] = useState(aHeight - SQUARE_DIMENSIONS - STARTING_OFFSET)
 
     const x1Ref = useRef()
     const y1Ref = useRef()
     const x2Ref = useRef()
     const y2Ref = useRef()
+    const direction1Ref = useRef('')
+    const direction2Ref = useRef('')
+    const direction1IntervalId = useRef(0)
+    const direction2IntervalId = useRef(0)
 
     x1Ref.current = x1
     y1Ref.current = y1
@@ -36,88 +41,75 @@ function Arena() {
             
             switch(key) {
                 case 'ArrowLeft':
-                    if (x1Ref.current > 0) {
-                        if (x1Ref.current - SPEED < 0) {
-                            setX1(0)
-                        } else {
-                            setX1(x1Ref.current - SPEED) //way 1
-                        }
-                    }
+                    startMovement(key, direction1IntervalId, direction1Ref, setX1, () => x1Ref.current > 0, () => x1Ref.current - STEP_DISTANCE < 0, 0, () => x1Ref.current - STEP_DISTANCE) //last arg is way 2 (using ref)
                     break;
                 case 'ArrowUp':
-                    if (y1Ref.current > 0) {
-                        if (y1Ref.current - SPEED < 0) {
-                            setY1(0)
-                        } else {
-                            setY1(cur => cur - SPEED) //way 2
-                        }
-                    }
+                    startMovement(key, direction1IntervalId, direction1Ref, setY1, () => y1Ref.current > 0, () => y1Ref.current - STEP_DISTANCE < 0, 0, () => cur => cur - STEP_DISTANCE) //last arg is way 1 (function)
                     break;
                 case 'ArrowDown':
-                    if (y1Ref.current < aHeight - 100) {
-                        if (y1Ref.current + SPEED > aHeight - 100) {
-                            setY1(aHeight - 100)
-                        } else {
-                            setY1(cur => cur + SPEED)
-                        }
-                    }
+                    startMovement(key, direction1IntervalId, direction1Ref, setY1, () => y1Ref.current < aHeight - SQUARE_DIMENSIONS, () => y1Ref.current + STEP_DISTANCE > aHeight - SQUARE_DIMENSIONS, aHeight - SQUARE_DIMENSIONS, () => cur => cur + STEP_DISTANCE)
                     break;
                 case 'ArrowRight':
-                    if (x1Ref.current < aWidth - 100) {
-                        if (x1Ref.current + SPEED > aWidth - 100) {
-                            setX1(aWidth - 100)
-                        } else {
-                            setX1(cur => cur + SPEED)
-                        }
-                    }
+                    startMovement(key, direction1IntervalId, direction1Ref, setX1, () => x1Ref.current < aWidth - SQUARE_DIMENSIONS, () => x1Ref.current + STEP_DISTANCE > aWidth - SQUARE_DIMENSIONS, aWidth - 100, () => cur => cur + STEP_DISTANCE)
                     break;
                 case 'a':
-                    if (x2Ref.current > 0) {
-                        if (x2Ref.current - SPEED < 0) {
-                            setX2(0)
-                        } else {
-                            setX2(x2Ref.current - SPEED) //way 1
-                        }
-                    }
+                    startMovement(key, direction2IntervalId, direction2Ref, setX2, () => x2Ref.current > 0, () => x2Ref.current - STEP_DISTANCE < 0, 0, () => x2Ref.current - STEP_DISTANCE)
                     break;
                 case 'w':
-                    if (y2Ref.current > 0) {
-                        if (y2Ref.current - SPEED < 0) {
-                            setY2(0)
-                        } else {
-                            setY2(cur => cur - SPEED) //way 2
-                        }
-                    }
+                    startMovement(key, direction2IntervalId, direction2Ref, setY2, () => y2Ref.current > 0, () => y2Ref.current - STEP_DISTANCE < 0, 0, () => cur => cur - STEP_DISTANCE)
                     break;
                 case 's':
-                    if (y2Ref.current < aHeight - 100) {
-                        if (y2Ref.current + SPEED > aHeight - 100) {
-                            setY2(aHeight - 100)
-                        } else {
-                            setY2(cur => cur + SPEED)
-                        }
-                    }
+                    startMovement(key, direction2IntervalId, direction2Ref, setY2, () => y2Ref.current < aHeight - SQUARE_DIMENSIONS, () => y2Ref.current + STEP_DISTANCE > aHeight - SQUARE_DIMENSIONS, aHeight - SQUARE_DIMENSIONS, () => cur => cur + STEP_DISTANCE)
                     break;
                 case 'd':
-                    if (x2Ref.current < aWidth - 100) {
-                        if (x2Ref.current + SPEED > aWidth - 100) {
-                            setX2(aWidth - 100)
-                        } else {
-                            setX2(cur => cur + SPEED)
-                        }
-                    }
+                    startMovement(key, direction2IntervalId, direction2Ref, setX2, () => x2Ref.current < aWidth - SQUARE_DIMENSIONS, () => x2Ref.current + STEP_DISTANCE > aWidth - SQUARE_DIMENSIONS, aWidth - SQUARE_DIMENSIONS, () => cur => cur + STEP_DISTANCE)
                     break;
                 default:
                     break;
             }
         }
+
+        const handleKeyUp = (e) => {
+            const key = e.key
+
+            if (direction1Ref.current === key) {
+                clearInterval(direction1IntervalId.current)
+                direction1IntervalId.current = 0
+                direction1Ref.current = ''
+            } else if (direction2Ref.current === key) {
+                clearInterval(direction2IntervalId.current)
+                direction2IntervalId.current = 0
+                direction2Ref.current = ''
+            }
+        }
+
         document.addEventListener('keydown', handleKeyDown, true);
+        document.addEventListener('keyup', handleKeyUp, true);
     
         return () => {
             document.removeEventListener('keydown', handleKeyDown);
+            document.removeEventListener('keyup', handleKeyUp);
         };
     
     }, []);
+
+    function startMovement(
+        dir, dirIntervalIdRef, dirRef, coordStateSetter, shouldMoveFunc, isNearEdgeFunc, edgeCoord, calcNewPos
+    ) {
+        if (dirRef.current !== dir) {
+            clearInterval(dirIntervalIdRef.current)
+            dirRef.current = dir
+            dirIntervalIdRef.current = setInterval(() => {
+                if (shouldMoveFunc()) {
+                    if (isNearEdgeFunc()) {
+                        coordStateSetter(edgeCoord)
+                    } else {
+                        coordStateSetter(calcNewPos())
+                    }
+                }
+            }, HOLD_INTERVAL_MS)
+        }
+    }
 
   return (
     <div id="a" className="arena">

@@ -12,7 +12,9 @@ https://stackoverflow.com/questions/59546928/keydown-up-events-with-react-hooks-
 Update: well, actually, they did give me a good solution (see "way 1"),
 but the better thing was just using plain refs (see "way 2")
 as in the first answer at this link:
-https://stackoverflow.com/questions/57847594/react-hooks-accessing-up-to-date-state-from-within-a-callback
+******
+    https://stackoverflow.com/questions/57847594/react-hooks-accessing-up-to-date-state-from-within-a-callback
+******
 I feel like I tried this... I'm not sure why it didn't work before
 (also, look at the last link I wrote, and the comments therein: search
 for "closure": you need to understand closures in React better.)
@@ -35,5 +37,9 @@ Here is a summary of the hours of looking for answers that didn't help me:
         https://react.dev/reference/react-dom/components/common#ref-callback
 
 
-
-
+This,
+    https://overreacted.io/making-setinterval-declarative-with-react-hooks/
+and this
+    https://react.dev/learn/reusing-logic-with-custom-hooks
+are going to be useful with the setInterval stuff I need to do,
+and learning custom hooks in general
