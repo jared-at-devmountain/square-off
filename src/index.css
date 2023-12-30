@@ -24,4 +24,21 @@
     height: 100px;
     width: 100px;
     position: absolute;
+    box-sizing: border-box;
+}
+
+.weapon-left {
+    border-left: 20px solid orange;
+}
+
+.weapon-up {
+    border-top: 20px solid orange;
+}
+
+.weapon-right {
+    border-right: 20px solid orange;
+}
+
+.weapon-down {
+    border-bottom: 20px solid orange;
 }

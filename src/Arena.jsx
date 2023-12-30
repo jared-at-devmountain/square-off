@@ -18,6 +18,8 @@ function Arena() {
     const [y1, setY1] = useState(0 + STARTING_OFFSET)
     const [x2, setX2] = useState(aWidth - SQUARE_DIMENSIONS - STARTING_OFFSET)
     const [y2, setY2] = useState(aHeight - SQUARE_DIMENSIONS - STARTING_OFFSET)
+    const [weapon1Direction, setWeapon1Direction] = useState('right')
+    const [weapon2Direction, setWeapon2Direction] = useState('left')
 
     const x1Ref = useRef()
     const y1Ref = useRef()
@@ -63,6 +65,12 @@ function Arena() {
                     break;
                 case 'd':
                     startMovement(key, direction2IntervalId, direction2Ref, setX2, () => x2Ref.current < aWidth - SQUARE_DIMENSIONS, () => x2Ref.current + STEP_DISTANCE > aWidth - SQUARE_DIMENSIONS, aWidth - SQUARE_DIMENSIONS, () => cur => cur + STEP_DISTANCE)
+                    break;
+                case 'Enter':
+                    setWeaponDirection(setWeapon1Direction)
+                    break;
+                case ' ':
+                    setWeaponDirection(setWeapon2Direction)
                     break;
                 default:
                     break;
@@ -111,16 +119,35 @@ function Arena() {
         }
     }
 
+    function setWeaponDirection(dirStateSetter) {
+        dirStateSetter(curDir => {
+            switch(curDir) {
+                case 'left':
+                    return 'up'
+                case 'up':
+                    return 'right'
+                case 'right':
+                    return 'down'
+                case 'down':
+                    return 'left'
+                default:
+                    break
+            }
+        })
+    }
+
   return (
     <div id="a" className="arena">
         <Square
             dimensions={SQUARE_DIMENSIONS}
+            weaponDirection={weapon1Direction}
             color='blue'
             x={x1}
             y={y1}
         />
         <Square
             dimensions={SQUARE_DIMENSIONS}
+            weaponDirection={weapon2Direction}
             color='red'
             x={x2}
             y={y2}

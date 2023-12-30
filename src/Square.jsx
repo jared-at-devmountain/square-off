@@ -1,8 +1,8 @@
-import { useState, useEffect } from 'react'
-
-function Square({color, x, y}) {
+function Square({color, x, y, weaponDirection}) {
     return (
-        <div className="square" style={{backgroundColor: color, left: x, top: y}}>
+        <div
+            className={'square ' + 'weapon-' + weaponDirection}
+            style={{backgroundColor: color, left: x, top: y}}>
         </div>
     )
 }
