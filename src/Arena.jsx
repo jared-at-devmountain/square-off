@@ -25,15 +25,21 @@ function Arena() {
     const y1Ref = useRef()
     const x2Ref = useRef()
     const y2Ref = useRef()
+    const weapon1DirectionRef = useRef()
+    const weapon2DirectionRef = useRef()
     const direction1Ref = useRef('')
     const direction2Ref = useRef('')
     const direction1IntervalIdRef = useRef(0)
     const direction2IntervalIdRef = useRef(0)
 
+
     x1Ref.current = x1
     y1Ref.current = y1
     x2Ref.current = x2
     y2Ref.current = y2
+    weapon1DirectionRef.current = weapon1Direction
+    weapon2DirectionRef.current = weapon2Direction
+
 
     //binds key presses to the document //
     useEffect(() => {
@@ -84,6 +90,8 @@ function Arena() {
         let pInfo = {
             dirRef: player === 'p1' ? direction1Ref : direction2Ref,
             dirIntervalIdRef: player === 'p1' ? direction1IntervalIdRef : direction2IntervalIdRef,
+            weaponDirectionRef: player === 'p1' ? weapon1DirectionRef : weapon2DirectionRef,
+            enemyWeaponDirectionRef: player === 'p1' ? weapon2DirectionRef : weapon1DirectionRef,
         }
 
         if (pInfo.dirRef.current !== key) {
@@ -131,10 +139,37 @@ function Arena() {
                     let playersOnSamePerpLevel = Math.abs(pInfo.coordData.perpCoordRef.current - pInfo.coordData.enemyPerpCoordRef.current) < SQUARE_DIMENSIONS
 
                     let playerWouldEnterEnemySquare = isIncreasingDir
-                        ? playersOnSamePerpLevel && Math.abs(pInfo.coordData.enemyCoordRef.current - pInfo.coordData.coordRef.current - 100) < STEP_DISTANCE
-                        : playersOnSamePerpLevel && Math.abs(pInfo.coordData.coordRef.current - pInfo.coordData.enemyCoordRef.current - 100) < STEP_DISTANCE
+                        ? playersOnSamePerpLevel && Math.abs(pInfo.coordData.enemyCoordRef.current - pInfo.coordData.coordRef.current - SQUARE_DIMENSIONS) < STEP_DISTANCE
+                        : playersOnSamePerpLevel && Math.abs(pInfo.coordData.coordRef.current - pInfo.coordData.enemyCoordRef.current - SQUARE_DIMENSIONS) < STEP_DISTANCE
 
                     if (playerWouldEnterEnemySquare) {
+                        let playerWeaponIsInMovementDir =
+                            (pInfo.weaponDirectionRef.current === 'left' && (key === 'ArrowLeft' || key === 'a')) ||
+                            (pInfo.weaponDirectionRef.current === 'right' && (key === 'ArrowRight' || key === 'd')) ||
+                            (pInfo.weaponDirectionRef.current === 'up' && (key === 'ArrowUp' || key === 'w')) ||
+                            (pInfo.weaponDirectionRef.current === 'down' && (key === 'ArrowDown' || key === 's'))
+
+                        let enemyWeaponIsFacingOncoming =
+                            (pInfo.enemyWeaponDirectionRef.current === 'right' && (key === 'ArrowLeft' || key === 'a')) ||
+                            (pInfo.enemyWeaponDirectionRef.current === 'left' && (key === 'ArrowRight' || key === 'd')) ||
+                            (pInfo.enemyWeaponDirectionRef.current === 'down' && (key === 'ArrowUp' || key === 'w')) ||
+                            (pInfo.enemyWeaponDirectionRef.current === 'up' && (key === 'ArrowDown' || key === 's'))
+
+                        if (playerWeaponIsInMovementDir) {
+                            if (enemyWeaponIsFacingOncoming) {
+                                pInfo.coordData.coordStateSetter(isIncreasingDir ? pInfo.coordData.enemyCoordRef.current - 100 : pInfo.coordData.enemyCoordRef.current + 100)
+                            } else {
+                                pInfo.coordData.coordStateSetter(pInfo.coordData.coordRef.current + (isIncreasingDir ? STEP_DISTANCE : -STEP_DISTANCE))
+                                alert(player === 'p1' ? 'Blue wins' : 'Red wins')
+                            }
+                        } else {
+                            if (enemyWeaponIsFacingOncoming) {
+                                pInfo.coordData.coordStateSetter(pInfo.coordData.coordRef.current + (isIncreasingDir ? STEP_DISTANCE : -STEP_DISTANCE))
+                                alert(player === 'p1' ? 'Red wins' : 'Blue wins')
+                            } else {
+                                pInfo.coordData.coordStateSetter(isIncreasingDir ? pInfo.coordData.enemyCoordRef.current - 100 : pInfo.coordData.enemyCoordRef.current + 100)
+                            }
+                        }
                         return
                     }
 
