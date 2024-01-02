@@ -104,30 +104,41 @@ function Arena() {
 
                 pInfo.coordData = player === 'p1'
                     ? (aSpecs.plane === 'horizontal'
-                        ? {coordStateSetter: setX1, coordRef: x1Ref}
-                        : {coordStateSetter: setY1, coordRef: y1Ref})
+                        ? {coordStateSetter: setX1, coordRef: x1Ref, enemyCoordRef: x2Ref, perpCoordRef: y1Ref, enemyPerpCoordRef: y2Ref}
+                        : {coordStateSetter: setY1, coordRef: y1Ref, enemyCoordRef: y2Ref, perpCoordRef: x1Ref, enemyPerpCoordRef: x2Ref})
                     : (aSpecs.plane === 'horizontal'
-                        ? {coordStateSetter: setX2, coordRef: x2Ref}
-                        : {coordStateSetter: setY2, coordRef: y2Ref})
+                        ? {coordStateSetter: setX2, coordRef: x2Ref, enemyCoordRef: x1Ref, perpCoordRef: y2Ref, enemyPerpCoordRef: y1Ref}
+                        : {coordStateSetter: setY2, coordRef: y2Ref, enemyCoordRef: y1Ref, perpCoordRef: x2Ref, enemyPerpCoordRef: x1Ref})
 
                 let moveTypeBools = {
-                        isntPressingWall: isIncreasingDir
-                            ? pInfo.coordData.coordRef.current < aSpecs.dimension - SQUARE_DIMENSIONS
-                            : pInfo.coordData.coordRef.current > 0,
-                        isNearEdge: isIncreasingDir
-                            ? pInfo.coordData.coordRef.current + STEP_DISTANCE > aSpecs.dimension - SQUARE_DIMENSIONS
-                            : pInfo.coordData.coordRef.current - STEP_DISTANCE < 0,
-                        edgeCoord: isIncreasingDir
-                            ? aSpecs.dimension - SQUARE_DIMENSIONS
-                            : 0
-                    }
+                    isntPressingWall: isIncreasingDir
+                        ? pInfo.coordData.coordRef.current < aSpecs.dimension - SQUARE_DIMENSIONS
+                        : pInfo.coordData.coordRef.current > 0,
+                    isNearEdge: isIncreasingDir
+                        ? pInfo.coordData.coordRef.current + STEP_DISTANCE > aSpecs.dimension - SQUARE_DIMENSIONS
+                        : pInfo.coordData.coordRef.current - STEP_DISTANCE < 0,
+                    edgeCoord: isIncreasingDir
+                        ? aSpecs.dimension - SQUARE_DIMENSIONS
+                        : 0
+                }
 
                 if (moveTypeBools.isntPressingWall) {
                     if (moveTypeBools.isNearEdge) {
                         pInfo.coordData.coordStateSetter(moveTypeBools.edgeCoord)
-                    } else {
-                        pInfo.coordData.coordStateSetter(pInfo.coordData.coordRef.current + (isIncreasingDir ? STEP_DISTANCE : -STEP_DISTANCE))
+                        return
                     }
+
+                    let playersOnSamePerpLevel = Math.abs(pInfo.coordData.perpCoordRef.current - pInfo.coordData.enemyPerpCoordRef.current) < SQUARE_DIMENSIONS
+
+                    let playerWouldEnterEnemySquare = isIncreasingDir
+                        ? playersOnSamePerpLevel && Math.abs(pInfo.coordData.enemyCoordRef.current - pInfo.coordData.coordRef.current - 100) < STEP_DISTANCE
+                        : playersOnSamePerpLevel && Math.abs(pInfo.coordData.coordRef.current - pInfo.coordData.enemyCoordRef.current - 100) < STEP_DISTANCE
+
+                    if (playerWouldEnterEnemySquare) {
+                        return
+                    }
+
+                    pInfo.coordData.coordStateSetter(pInfo.coordData.coordRef.current + (isIncreasingDir ? STEP_DISTANCE : -STEP_DISTANCE))
                 }
             }, HOLD_INTERVAL_MS)
         }
