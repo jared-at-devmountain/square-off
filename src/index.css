@@ -27,18 +27,53 @@
     box-sizing: border-box;
 }
 
-.weapon-left {
+.explode {
+    width: 300px;
+    position: absolute;
+}
+
+.weapon-red-left {
     border-left: 20px solid orange;
 }
 
-.weapon-up {
+.weapon-red-up {
     border-top: 20px solid orange;
 }
 
-.weapon-right {
+.weapon-red-right {
     border-right: 20px solid orange;
 }
 
-.weapon-down {
+.weapon-red-down {
     border-bottom: 20px solid orange;
+}
+
+.weapon-blue-left {
+    border-left: 20px solid burlywood;
+}
+
+.weapon-blue-up {
+    border-top: 20px solid burlywood;
+}
+
+.weapon-blue-right {
+    border-right: 20px solid burlywood;
+}
+
+.weapon-blue-down {
+    border-bottom: 20px solid burlywood;
+}
+
+.winning-message {
+    font-family: sans-serif;
+}
+
+.winning-message-parent {
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    position: relative;
+    z-index: 500;
 }

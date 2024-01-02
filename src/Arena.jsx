@@ -20,6 +20,8 @@ function Arena() {
     const [y2, setY2] = useState(aHeight - SQUARE_DIMENSIONS - STARTING_OFFSET)
     const [weapon1Direction, setWeapon1Direction] = useState('right')
     const [weapon2Direction, setWeapon2Direction] = useState('left')
+    const [winningMessage, setWinningMessage] = useState('')
+    const [gameOver, setGameOver] = useState(false)
 
     const x1Ref = useRef()
     const y1Ref = useRef()
@@ -27,11 +29,11 @@ function Arena() {
     const y2Ref = useRef()
     const weapon1DirectionRef = useRef()
     const weapon2DirectionRef = useRef()
+    const winningMessageRef = useRef()
     const direction1Ref = useRef('')
     const direction2Ref = useRef('')
     const direction1IntervalIdRef = useRef(0)
     const direction2IntervalIdRef = useRef(0)
-
 
     x1Ref.current = x1
     y1Ref.current = y1
@@ -39,13 +41,35 @@ function Arena() {
     y2Ref.current = y2
     weapon1DirectionRef.current = weapon1Direction
     weapon2DirectionRef.current = weapon2Direction
+    winningMessageRef.current = winningMessage
 
+    useEffect(() => {
+        if (winningMessage) {
+            setGameOver(true)
+            setTimeout(() => {
+                window.location.reload()
+            }, 1000)
+        }
+    }, [winningMessage])
 
     //binds key presses to the document //
     useEffect(() => {
 
         const handleKeyDown = (e) => {
             const key = e.key;
+
+            if (winningMessageRef.current) {
+                if (direction1Ref.current === key) {
+                    clearInterval(direction1IntervalIdRef.current)
+                    direction1IntervalIdRef.current = 0
+                    direction1Ref.current = ''
+                } else if (direction2Ref.current === key) {
+                    clearInterval(direction2IntervalIdRef.current)
+                    direction2IntervalIdRef.current = 0
+                    direction2Ref.current = ''
+                }
+                return
+            }
 
             let player = (key.includes('Arrow') || key === 'Enter') && 'p1'
             if (!player) {
@@ -160,12 +184,12 @@ function Arena() {
                                 pInfo.coordData.coordStateSetter(isIncreasingDir ? pInfo.coordData.enemyCoordRef.current - 100 : pInfo.coordData.enemyCoordRef.current + 100)
                             } else {
                                 pInfo.coordData.coordStateSetter(pInfo.coordData.coordRef.current + (isIncreasingDir ? STEP_DISTANCE : -STEP_DISTANCE))
-                                alert(player === 'p1' ? 'Blue wins' : 'Red wins')
+                                setWinningMessage(player === 'p1' ? 'Blue wins' : 'Red wins')
                             }
                         } else {
                             if (enemyWeaponIsFacingOncoming) {
                                 pInfo.coordData.coordStateSetter(pInfo.coordData.coordRef.current + (isIncreasingDir ? STEP_DISTANCE : -STEP_DISTANCE))
-                                alert(player === 'p1' ? 'Red wins' : 'Blue wins')
+                                setWinningMessage(player === 'p1' ? 'Red wins' : 'Blue wins')
                             } else {
                                 pInfo.coordData.coordStateSetter(isIncreasingDir ? pInfo.coordData.enemyCoordRef.current - 100 : pInfo.coordData.enemyCoordRef.current + 100)
                             }
@@ -197,13 +221,21 @@ function Arena() {
     }
 
   return (
+
     <div id="a" className="arena">
+        { gameOver &&
+            <div className={"winning-message-parent"}>
+                <h1 className={'winning-message'}>{winningMessage}</h1>
+            </div>
+        }
         <Square
             dimensions={SQUARE_DIMENSIONS}
             weaponDirection={weapon1Direction}
             color='blue'
             x={x1}
             y={y1}
+            zIndex={winningMessage.includes('Blue') ? 2 : 1}
+            lost={winningMessage.includes('Red')}
         />
         <Square
             dimensions={SQUARE_DIMENSIONS}
@@ -211,6 +243,8 @@ function Arena() {
             color='red'
             x={x2}
             y={y2}
+            zIndex={winningMessage.includes('Red') ? 2 : 1}
+            lost={winningMessage.includes('Blue')}
         />
     </div>
   )
