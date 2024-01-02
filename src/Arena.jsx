@@ -27,53 +27,32 @@ function Arena() {
     const y2Ref = useRef()
     const direction1Ref = useRef('')
     const direction2Ref = useRef('')
-    const direction1IntervalId = useRef(0)
-    const direction2IntervalId = useRef(0)
+    const direction1IntervalIdRef = useRef(0)
+    const direction2IntervalIdRef = useRef(0)
 
     x1Ref.current = x1
     y1Ref.current = y1
     x2Ref.current = x2
     y2Ref.current = y2
 
-    //binds key presses to the document
+    //binds key presses to the document //
     useEffect(() => {
 
         const handleKeyDown = (e) => {
             const key = e.key;
-            
-            switch(key) {
-                case 'ArrowLeft':
-                    startMovement(key, direction1IntervalId, direction1Ref, setX1, () => x1Ref.current > 0, () => x1Ref.current - STEP_DISTANCE < 0, 0, () => x1Ref.current - STEP_DISTANCE) //last arg is way 2 (using ref)
-                    break;
-                case 'ArrowUp':
-                    startMovement(key, direction1IntervalId, direction1Ref, setY1, () => y1Ref.current > 0, () => y1Ref.current - STEP_DISTANCE < 0, 0, () => cur => cur - STEP_DISTANCE) //last arg is way 1 (function)
-                    break;
-                case 'ArrowDown':
-                    startMovement(key, direction1IntervalId, direction1Ref, setY1, () => y1Ref.current < aHeight - SQUARE_DIMENSIONS, () => y1Ref.current + STEP_DISTANCE > aHeight - SQUARE_DIMENSIONS, aHeight - SQUARE_DIMENSIONS, () => cur => cur + STEP_DISTANCE)
-                    break;
-                case 'ArrowRight':
-                    startMovement(key, direction1IntervalId, direction1Ref, setX1, () => x1Ref.current < aWidth - SQUARE_DIMENSIONS, () => x1Ref.current + STEP_DISTANCE > aWidth - SQUARE_DIMENSIONS, aWidth - 100, () => cur => cur + STEP_DISTANCE)
-                    break;
-                case 'a':
-                    startMovement(key, direction2IntervalId, direction2Ref, setX2, () => x2Ref.current > 0, () => x2Ref.current - STEP_DISTANCE < 0, 0, () => x2Ref.current - STEP_DISTANCE)
-                    break;
-                case 'w':
-                    startMovement(key, direction2IntervalId, direction2Ref, setY2, () => y2Ref.current > 0, () => y2Ref.current - STEP_DISTANCE < 0, 0, () => cur => cur - STEP_DISTANCE)
-                    break;
-                case 's':
-                    startMovement(key, direction2IntervalId, direction2Ref, setY2, () => y2Ref.current < aHeight - SQUARE_DIMENSIONS, () => y2Ref.current + STEP_DISTANCE > aHeight - SQUARE_DIMENSIONS, aHeight - SQUARE_DIMENSIONS, () => cur => cur + STEP_DISTANCE)
-                    break;
-                case 'd':
-                    startMovement(key, direction2IntervalId, direction2Ref, setX2, () => x2Ref.current < aWidth - SQUARE_DIMENSIONS, () => x2Ref.current + STEP_DISTANCE > aWidth - SQUARE_DIMENSIONS, aWidth - SQUARE_DIMENSIONS, () => cur => cur + STEP_DISTANCE)
-                    break;
-                case 'Enter':
-                    setWeaponDirection(setWeapon1Direction)
-                    break;
-                case ' ':
-                    setWeaponDirection(setWeapon2Direction)
-                    break;
-                default:
-                    break;
+
+            let player = (key.includes('Arrow') || key === 'Enter') && 'p1'
+            if (!player) {
+                player = (key === 'a' || key === 'w' || key === 's' || key === 'd' || key === ' ') && 'p2'
+            }
+            if (!player) {
+                return
+            }
+
+            if (key === 'Enter' || key === ' ') {
+                setWeaponDirection(player === 'p1' ? setWeapon1Direction : setWeapon2Direction)
+            } else {
+                startMovement(key, player)
             }
         }
 
@@ -81,12 +60,12 @@ function Arena() {
             const key = e.key
 
             if (direction1Ref.current === key) {
-                clearInterval(direction1IntervalId.current)
-                direction1IntervalId.current = 0
+                clearInterval(direction1IntervalIdRef.current)
+                direction1IntervalIdRef.current = 0
                 direction1Ref.current = ''
             } else if (direction2Ref.current === key) {
-                clearInterval(direction2IntervalId.current)
-                direction2IntervalId.current = 0
+                clearInterval(direction2IntervalIdRef.current)
+                direction2IntervalIdRef.current = 0
                 direction2Ref.current = ''
             }
         }
@@ -101,18 +80,53 @@ function Arena() {
     
     }, []);
 
-    function startMovement(
-        dir, dirIntervalIdRef, dirRef, coordStateSetter, shouldMoveFunc, isNearEdgeFunc, edgeCoord, calcNewPos
-    ) {
-        if (dirRef.current !== dir) {
-            clearInterval(dirIntervalIdRef.current)
-            dirRef.current = dir
-            dirIntervalIdRef.current = setInterval(() => {
-                if (shouldMoveFunc()) {
-                    if (isNearEdgeFunc()) {
-                        coordStateSetter(edgeCoord)
+    function startMovement(key, player) {
+        let pInfo = {
+            dirRef: player === 'p1' ? direction1Ref : direction2Ref,
+            dirIntervalIdRef: player === 'p1' ? direction1IntervalIdRef : direction2IntervalIdRef,
+        }
+
+        if (pInfo.dirRef.current !== key) {
+            clearInterval(pInfo.dirIntervalIdRef.current)
+            pInfo.dirRef.current = key
+            pInfo.dirIntervalIdRef.current = setInterval(() => {
+
+                let aSpecs = (key === 'a' || key === 'ArrowLeft' || key === 'ArrowRight' || key === 'd')
+                    && {plane: 'horizontal', dimension: aWidth}
+                if (!aSpecs) {
+                    aSpecs = (key === 'ArrowUp' || key === 'w' || key === 's' || key === 'ArrowDown')
+                        && {plane: 'vertical', dimension: aHeight}
+                }
+
+                let isIncreasingDir = key === 'ArrowRight' || key === 'd' || key === 's' || key === 'ArrowDown'
+                    ? true
+                    : false
+
+                pInfo.coordData = player === 'p1'
+                    ? (aSpecs.plane === 'horizontal'
+                        ? {coordStateSetter: setX1, coordRef: x1Ref}
+                        : {coordStateSetter: setY1, coordRef: y1Ref})
+                    : (aSpecs.plane === 'horizontal'
+                        ? {coordStateSetter: setX2, coordRef: x2Ref}
+                        : {coordStateSetter: setY2, coordRef: y2Ref})
+
+                let moveTypeBools = {
+                        isntPressingWall: isIncreasingDir
+                            ? pInfo.coordData.coordRef.current < aSpecs.dimension - SQUARE_DIMENSIONS
+                            : pInfo.coordData.coordRef.current > 0,
+                        isNearEdge: isIncreasingDir
+                            ? pInfo.coordData.coordRef.current + STEP_DISTANCE > aSpecs.dimension - SQUARE_DIMENSIONS
+                            : pInfo.coordData.coordRef.current - STEP_DISTANCE < 0,
+                        edgeCoord: isIncreasingDir
+                            ? aSpecs.dimension - SQUARE_DIMENSIONS
+                            : 0
+                    }
+
+                if (moveTypeBools.isntPressingWall) {
+                    if (moveTypeBools.isNearEdge) {
+                        pInfo.coordData.coordStateSetter(moveTypeBools.edgeCoord)
                     } else {
-                        coordStateSetter(calcNewPos())
+                        pInfo.coordData.coordStateSetter(pInfo.coordData.coordRef.current + (isIncreasingDir ? STEP_DISTANCE : -STEP_DISTANCE))
                     }
                 }
             }, HOLD_INTERVAL_MS)
